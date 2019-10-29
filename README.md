@@ -1,1 +1,1 @@
-"# Gulevich-Dmitry-Algorithms" 
+# Gulevich-Dmitry-Algorithms 
