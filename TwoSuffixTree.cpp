@@ -10,7 +10,38 @@ enum Rule {
     ThirdRule
 };
 
-struct Node {
+class SuffixTree {
+private:
+    struct Node;
+    struct Info;
+
+    std::shared_ptr<Node> root;
+    int vert_count = 1;
+
+    Rule _HowToExtend(const std::string& str, Info& suf, int idx);
+    void _Print(const std::shared_ptr<Node>& curr, int& number);
+
+public:
+    SuffixTree();
+
+    void Build(const std::string& str);
+    void ExtendTree(const std::string& str, Info& first, int idx);
+    // продлевает суффиксы в дереве c [i .. idx - 1] до [i .. idx] начиная с некоторого суффикса first
+
+    void ExtendSuffix(const std::string& str, Info& suf, int idx);
+    // продлевает суффикс, заканчивающийся в suf символом str[idx] и обновляет suf информацией о продлённом суффикса
+
+    void Jump(const std::string& str, Info& suf, int idx);
+    void Print();
+    int VertexCount();
+
+    friend void _AdaptForTwoStrings(SuffixTree& tree, int first_size, const std::shared_ptr<Node>& curr, int& count);
+    friend void AdaptForTwoStrings(SuffixTree& tree, int first_size);
+    friend void _PrintDoubleTree(const SuffixTree& tree, int first_size, const std::shared_ptr<Node>& curr);
+    friend void PrintDoubleTree(const SuffixTree& tree, int first_size);
+};
+
+struct SuffixTree::Node {
     std::weak_ptr<Node> parent;
     std::weak_ptr<Node> suffix_link;
     int left = 0;
@@ -22,14 +53,15 @@ struct Node {
 
     Node() = default;
     Node(const std::shared_ptr<Node>& parent, int l, int r, bool is_leaf):
-            parent(parent), left(l), right(r), is_leaf(is_leaf) {}
+    parent(parent), left(l), right(r), is_leaf(is_leaf) {}
+
+    std::ostream& operator<<(std::ostream& out) {
+        out << left << "-" << right;
+        return out;
+    }
 };
 
-std::ostream& operator<<(std::ostream& out, const Node& node) {
-    out << node.left << "-" << node.right;
-}
-
-struct Info {  // содержит информацию о положении суффикса в дереве
+struct SuffixTree::Info {  // содержит информацию о положении суффикса в дереве
     std::shared_ptr<Node> vertex;  // вершина, на ребре ведущем в которую расположен суффикс
 
     int end = 0;  // положение в ребре, в котором заканчивается суффикс
@@ -37,36 +69,16 @@ struct Info {  // содержит информацию о положении с
 
     Info() = default;
     Info(const std::shared_ptr<Node>& v, int e): vertex(v), end(e) {}
-    Info(const std::shared_ptr<Node>& v): vertex(v) {
+    explicit Info(const std::shared_ptr<Node>& v): vertex(v) {
         end = v->right;
     }
 };
 
-class SuffixTree {
-public:
-    std::shared_ptr<Node> root;
-    int vert_count = 1;
-
-    SuffixTree() {
-        root = std::make_shared<Node>();
-        root->parent = root;
-        root->suffix_link = root;
-    }
-
-    void Build(const std::string& str);
-    void ExtendTree(const std::string& str, Info& first, int idx);
-    // продлевает суффиксы в дереве c [i .. idx - 1] до [i .. idx] начиная с некоторого суффикса first
-
-    void ExtendSuffix(const std::string& str, Info& suf, int idx);
-    // продлевает суффикс, заканчивающийся в suf символом str[idx] и обновляет suf информацией о продлённом суффикса
-
-    void Jump(const std::string& str, Info& suf, int idx);
-    void Print();
-private:
-    Rule _HowToExtend(const std::string& str, Info& suf, int idx);
-    void _Print(const std::shared_ptr<Node>& curr, int& number);
-};
-
+SuffixTree::SuffixTree() {
+    root = std::make_shared<Node>();
+    root->parent = root;
+    root->suffix_link = root;
+}
 
 void SuffixTree::_Print(const std::shared_ptr<Node>& curr, int& number) {
     if (curr != root) {
@@ -83,6 +95,10 @@ void SuffixTree::_Print(const std::shared_ptr<Node>& curr, int& number) {
 void SuffixTree::Print() {
     int number = 0;
     _Print(root, number);
+}
+
+int SuffixTree::VertexCount() {
+    return vert_count;
 }
 
 
@@ -210,10 +226,10 @@ void SuffixTree::ExtendTree(const std::string& str, Info& first, int idx) {
 
 
 
-void _AdaptForTwoStrings(SuffixTree& tree, int first_size, const std::shared_ptr<Node>& curr, int& count) {
+void _AdaptForTwoStrings(SuffixTree& tree, int first_size, const std::shared_ptr<SuffixTree::Node>& curr, int& count) {
     for (auto& i: curr->go) {
         if (i.second->left < first_size && i.second->right > first_size) {  // нужно обрубить ребро на метке s.size()
-            curr->go[i.first] = std::make_shared<Node>(curr, i.second->left, first_size, true);
+            curr->go[i.first] = std::make_shared<SuffixTree::Node>(curr, i.second->left, first_size, true);
         }
         count++;
         i.second->number = count - 1;
@@ -229,7 +245,7 @@ void AdaptForTwoStrings(SuffixTree& tree, int first_size) {
     tree.vert_count = count;
 }
 
-void _PrintDoubleTree(const SuffixTree& tree, int first_size, const std::shared_ptr<Node>& curr) {
+void _PrintDoubleTree(const SuffixTree& tree, int first_size, const std::shared_ptr<SuffixTree::Node>& curr) {
     if (curr != tree.root) {
 //        std::cout << curr->parent.lock()->number << " ";
         printf("%d ", curr->parent.lock()->number);
@@ -260,6 +276,6 @@ int main() {
     T.Build(s+t);
 
     AdaptForTwoStrings(T, s.size());
-    std::cout << T.vert_count << std::endl;
+    std::cout << T.VertexCount() << std::endl;
     PrintDoubleTree(T, s.size());
 }
