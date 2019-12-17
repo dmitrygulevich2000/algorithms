@@ -372,7 +372,6 @@ BigInteger& BigInteger::operator*=(const BigInteger &y) {
         positive = true;
         return *this;
     }
-//    std::cout << str <<*this << " * " << y << std::endl;
 
     int max_size = std::max(digits.size(), y.digits.size());
     if (max_size == 1) {
@@ -380,7 +379,6 @@ BigInteger& BigInteger::operator*=(const BigInteger &y) {
         BigInteger result = BigInteger::_MultiplyDigits(digits[0], y.digits[0]);
         positive = p;
         digits = result.digits;
-//        std::cout << "Simple: " << *this << std::endl;
         return *this;
     }
 
@@ -389,9 +387,6 @@ BigInteger& BigInteger::operator*=(const BigInteger &y) {
     BigInteger P1(digits, max_size/2, max_size);  // x1
     BigInteger y0(y.digits, 0, max_size/2);
     BigInteger y1(y.digits, max_size/2, max_size);
-
-//    std::cout << str << x1 << " " << x0 << " ; " << y1 << " " << y0 << std::endl;
-//    str += "  ";
 
     BigInteger P = (P0 + P1);
     P *= (y0 + y1);
@@ -415,9 +410,6 @@ BigInteger& BigInteger::operator*=(const BigInteger &y) {
     }
 
     bool p = !(positive ^ y.positive);
-//    std::cout << str << "P = " << P << std::endl;
-//    std::cout << str << *this << " * " << y << " = "
-//    << P1 << " + " << P2 << " + " << P0 << " = " << P0 + P1 + P2 << std::endl;
     BigInteger result = P0 + P1 + P2;
     positive = p;
     digits = result.digits;
@@ -443,56 +435,6 @@ std::pair<int, BigInteger> BigInteger::_ElementaryDivision(const BigInteger &x, 
     }
 }
 
-//BigInteger& BigInteger::operator/=(const BigInteger &y) {
-//    std::vector<int> result;
-//    bool sign = !(positive ^ y.positive);
-//    int pos = digits.size() - y.digits.size();
-//
-//    BigInteger divider;
-//    if (y < 0) divider = -y;
-//    else divider = y;
-//
-//    BigInteger divident(digits, pos, digits.size());
-////    std::cout << "divident1: " << divident << " y: " << y << std::endl;
-//    if (divident < divider) {
-//        --pos;
-//        if (pos < 0) {
-//            positive = true;
-//            digits.clear();
-//            return *this;
-//        }
-//        divident.digits.insert(divident.digits.begin(), digits[pos]);
-//    }
-//
-////    std::cout << "divident2: " << divident << std::endl;
-//    while (pos > 0) {
-//        std::pair<int, BigInteger> step = BigInteger::_ElementaryDivision(divident, divider);
-//        //       std::cout << "div = " << step.first << " mod = " << step.second << " pos = " << pos << std::endl;
-//        // step = <цифра результата, остаток>
-//
-//        result.insert(result.begin(), step.first);
-//        --pos;
-//        divident = step.second;
-//        divident.digits.insert(divident.digits.begin(), digits[pos]);
-//
-//        while (pos >= 0 && divident < divider) {
-//            result.insert(result.begin(), 0);
-//            if (pos == 0) {
-//                digits = result;
-//                positive = sign;
-//                return *this;
-//            }
-//            --pos;
-//            divident.digits.insert(divident.digits.begin(), digits[pos]);
-//        }
-//    }
-//    std::pair<int, BigInteger> last_step = BigInteger::_ElementaryDivision(divident, divider);
-//    if (last_step.first != 0) result.insert(result.begin(), last_step.first);
-//
-//    digits = result;
-//    positive = sign;
-//    return *this;
-//}
 
 BigInteger& BigInteger::operator/=(const BigInteger &y) {
     BigInteger result = 0;
@@ -510,7 +452,7 @@ BigInteger& BigInteger::operator/=(const BigInteger &y) {
         *this = 0;
         return *this;
     }
-//    std::cout << divident << " " << divider << std::endl;
+
     while (divident >= divider) {
         int size_diff = divident.digits.size() - divider.digits.size() - 1;
         if (*(divider.digits.end() - 1) < *(divident.digits.end() - 1)) size_diff++;
